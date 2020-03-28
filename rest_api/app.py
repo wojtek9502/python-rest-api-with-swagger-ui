@@ -8,6 +8,7 @@ from rest_api.database import db
 from rest_api.database.models import Author, Book
 from rest_api.api.restplus import api
 from rest_api.api.endpoints.authors import ns as author_namespace
+from rest_api.api.endpoints.books import ns as book_namespace
 
 app = Flask(__name__)
 app_config_file_path = os.path.normpath(os.path.join(os.path.dirname(__file__), './app.conf'))
@@ -38,6 +39,7 @@ def initialize_app(flask_app):
     blueprint = Blueprint('api', __name__, url_prefix='/api')
     api.init_app(blueprint)
     api.add_namespace(author_namespace)
+    api.add_namespace(book_namespace)
     flask_app.register_blueprint(blueprint)
 
     if not os.path.exists(flask_app.config['SQLITE_FILE_PATH']):
