@@ -7,14 +7,18 @@ from datetime import date
 from rest_api.database import db
 
 
+book_author_table = db.Table('book_author',
+    db.Column('book_id', db.Integer, db.ForeignKey('book.id')),
+    db.Column('author_id', db.Integer, db.ForeignKey('author.id'))
+)
+
+
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(80))
     isbn = db.Column(db.String(80))
     pub_date = db.Column(db.Date)
-
-    author_id = db.Column(db.Integer, db.ForeignKey('author.id'))
-    authors = db.relationship('Author', backref=db.backref('books', lazy='dynamic'))
+    authors = db.relationship('Author', backref=db.backref('books', lazy='dynamic'), secondary=book_author_table)
 
     def __init__(self, title, isbn, authors, pub_date=None):
         self.title = title

@@ -37,9 +37,14 @@ def initialize_app(flask_app):
         with app.app_context():
             db.create_all()
 
-            author = Author("Adam", "Mickiewicz")
-            book = Book("Dziady", "123", author)
-            db.session.add(author)
+            author1 = Author("Adam", "Mickiewicz")
+            author2 = Author("Adam", "Mickiewicz2")
+            book = Book("Dziady", "123", [author1, author2])
+            book.authors.append(author1)
+            book.authors.append(author2)
+
+            db.session.add(author1)
+            db.session.add(author2)
             db.session.add(book)
             db.session.commit()
 
