@@ -5,6 +5,7 @@ from flask import Flask
 from decouple import Config, RepositoryEnv
 
 from rest_api.database import db
+from rest_api.database.models import Author, Book
 
 app = Flask(__name__)
 app_config_file_path = os.path.normpath(os.path.join(os.path.dirname(__file__), './app.conf'))
@@ -25,20 +26,24 @@ def configure_app(flask_app):
 
     flask_app.config['SQLALCHEMY_DATABASE_URI'] = app_file_config.get('SQLALCHEMY_DATABASE_URI')
     flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = app_file_config.get('SQLALCHEMY_TRACK_MODIFICATIONS', cast=bool)
+    flask_app.config['SQLITE_FILE_PATH'] = flask_app.config['SQLALCHEMY_DATABASE_URI'].replace("sqlite:///", "")
 
 
 def initialize_app(flask_app):
     configure_app(flask_app)
     db.init_app(flask_app)
 
-    with app.app_context():
-        db.create_all()
+    if not os.path.exists(flask_app.config['SQLITE_FILE_PATH']):
+        with app.app_context():
+            db.create_all()
 
-
-def main():
-    initialize_app(app)
-    app.run(debug=DEBUG_FLAG)
+            author = Author("Adam", "Mickiewicz")
+            book = Book("Dziady", "123", author)
+            db.session.add(author)
+            db.session.add(book)
+            db.session.commit()
 
 
 if __name__ == "__main__":
-    main()
+    initialize_app(app)
+    app.run(debug=DEBUG_FLAG)
