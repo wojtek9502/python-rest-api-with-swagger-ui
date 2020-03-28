@@ -4,6 +4,7 @@ import os
 from flask import Flask
 from decouple import Config, RepositoryEnv
 
+from rest_api.database import db
 
 app = Flask(__name__)
 app_config_file_path = os.path.normpath(os.path.join(os.path.dirname(__file__), './app.conf'))
@@ -28,6 +29,11 @@ def configure_app(flask_app):
 
 def initialize_app(flask_app):
     configure_app(flask_app)
+    db.init_app(flask_app)
+
+    with app.app_context():
+        db.create_all()
+
 
 def main():
     initialize_app(app)
