@@ -1,4 +1,5 @@
 import logging
+import traceback
 
 from flask import request
 from flask_restplus import Resource
@@ -6,6 +7,7 @@ from rest_api.api.serializers import author, author_with_books
 from rest_api.api.restplus import api
 from rest_api.database.models import Author
 from rest_api.database import db
+from sqlalchemy.orm.exc import NoResultFound
 
 log = logging.getLogger(__name__)
 
@@ -53,7 +55,17 @@ class AuthorItem(Resource):
         """
         Returns a author with a list of books.
         """
-        return Author.query.filter(Author.id == id).one()
+        try:
+            authors = Author.query.filter(Author.id == id).one()
+        except NoResultFound as e:
+            log.error(traceback.format_exc())
+            return {'message': 'A database result was required but none was found.'}, 404
+        except Exception as e:
+            message = 'An unhandled exception occurred: ' + str(e)
+            log.error(message)
+            return {'message': message}, 500
+
+        return authors
 
     @api.expect(author)
     @api.response(204, 'Author successfully updated.')
@@ -77,11 +89,19 @@ class AuthorItem(Resource):
         """
         data = request.json
 
-        author = Author.query.filter(Author.id == id).one()
-        author.name = data.get('name')
-        author.name = data.get('surname')
-        db.session.add(author)
-        db.session.commit()
+        try:
+            author_obj = Author.query.filter(Author.id == id).one()
+            author_obj.name = data.get('name')
+            author_obj.name = data.get('surname')
+            db.session.add(author_obj)
+            db.session.commit()
+        except NoResultFound as e:
+            log.error(traceback.format_exc())
+            return {'message': 'A database result was required but none was found.'}, 404
+        except Exception as e:
+            message = 'An unhandled exception occurred: ' + str(e)
+            log.error(message)
+            return {'message': message}, 500
 
         return None, 204
 
@@ -90,8 +110,16 @@ class AuthorItem(Resource):
         """
         Deletes author.
         """
-        author = Author.query.filter(Author.id == id).one()
-        print(author)
-        db.session.delete(author)
-        db.session.commit()
+        try:
+            author_obj = Author.query.filter(Author.id == id).one()
+            db.session.delete(author_obj)
+            db.session.commit()
+        except NoResultFound as e:
+            log.error(traceback.format_exc())
+            return {'message': 'A database result was required but none was found.'}, 404
+        except Exception as e:
+            message = 'An unhandled exception occurred: ' + str(e)
+            log.error(message)
+            return {'message': message}, 500
+
         return None, 204
