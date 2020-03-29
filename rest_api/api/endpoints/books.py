@@ -1,9 +1,11 @@
 import logging
+import traceback
 
 from flask import request
 from flask_restplus import Resource
-import time
-from datetime import datetime, date
+from datetime import date
+
+from sqlalchemy.orm.exc import NoResultFound
 
 from rest_api.api.serializers import book, book_with_authors
 from rest_api.api.restplus import api
@@ -59,7 +61,17 @@ class PostItem(Resource):
         """
         Returns a book with authors.
         """
-        return Book.query.filter(Book.id == id).one()
+        try:
+            book_obj = Book.query.filter(Book.id == id).one()
+        except NoResultFound as e:
+            log.error(traceback.format_exc())
+            return {'message': 'A database result was required but none was found.'}, 404
+        except Exception as e:
+            message = 'An unhandled exception occurred: ' + str(e)
+            log.error(message)
+            return {'message': message}, 500
+
+        return book_obj
 
     @api.expect(book)
     @api.response(204, 'Book successfully updated.')
@@ -68,17 +80,26 @@ class PostItem(Resource):
         Updates a book.
         """
         data = request.json
-        book_obj = Book.query.filter(Book.id == id).one()
-        book_obj.title = data.get('title')
-        book_obj.isbn = data.get('isbn')
-        book_obj.pub_date = date.fromtimestamp(data.get("pub_date_timestamp"))
+        try:
+            book_obj = Book.query.filter(Book.id == id).one()
+            book_obj.title = data.get('title')
+            book_obj.isbn = data.get('isbn')
+            book_obj.pub_date = date.fromtimestamp(data.get("pub_date_timestamp"))
 
-        author_id = data.get('author_id')
-        author_obj = Author.query.filter(Author.id == author_id).one()
-        book_obj.authors.append(author_obj)
+            author_id = data.get('author_id')
+            author_obj = Author.query.filter(Author.id == author_id).one()
+            book_obj.authors.append(author_obj)
 
-        db.session.add(book_obj)
-        db.session.commit()
+            db.session.add(book_obj)
+            db.session.commit()
+        except NoResultFound as e:
+            log.error(traceback.format_exc())
+            return {'message': 'A database result was required but none was found.'}, 404
+        except Exception as e:
+            message = 'An unhandled exception occurred: ' + str(e)
+            log.error(message)
+            return {'message': message}, 500
+
         return None, 204
 
     @api.response(204, 'Post successfully deleted.')
@@ -86,7 +107,15 @@ class PostItem(Resource):
         """
         Deletes book.
         """
-        book = Book.query.filter(Book.id == id).one()
-        db.session.delete(book)
-        db.session.commit()
+        try:
+            book_obj = Book.query.filter(Book.id == id).one()
+            db.session.delete(book_obj)
+            db.session.commit()
+        except NoResultFound as e:
+            log.error(traceback.format_exc())
+            return {'message': 'A database result was required but none was found.'}, 404
+        except Exception as e:
+            message = 'An unhandled exception occurred: ' + str(e)
+            log.error(message)
+            return {'message': message}, 500
         return None, 204

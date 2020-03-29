@@ -21,6 +21,7 @@ DEBUG_FLAG = app_file_config.get('DEBUG', cast=bool)
 
 def configure_app(flask_app):
     flask_app.config['SERVER_NAME'] = app_file_config.get('SERVER_NAME')
+    flask_app.config['PROPAGATE_EXCEPTIONS'] = app_file_config.get('PROPAGATE_EXCEPTIONS')
 
     flask_app.config['SWAGGER_UI_DOC_EXPANSION'] = app_file_config.get('SWAGGER_UI_DOC_EXPANSION')
     flask_app.config['RESTPLUS_VALIDATE'] = app_file_config.get('RESTPLUS_VALIDATE', cast=bool)
