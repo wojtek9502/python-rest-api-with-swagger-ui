@@ -5,6 +5,7 @@
 from datetime import date
 
 from rest_api.database import db
+import json
 
 
 book_author_table = db.Table('book_author',
@@ -15,22 +16,24 @@ book_author_table = db.Table('book_author',
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(80))
-    isbn = db.Column(db.String(80))
-    pub_date = db.Column(db.Date)
+    title = db.Column(db.String(80), unique=True)
+    isbn = db.Column(db.String(80), unique=True)
+    pub_date = db.Column(db.Integer, unique=True)
     authors = db.relationship('Author', backref=db.backref('books', lazy='dynamic'), secondary=book_author_table)
 
     def __init__(self, title, isbn, authors, pub_date=None):
         self.title = title
         self.isbn = isbn
         if pub_date is None:
-            pub_date = date.today()
+            pub_date = 0
         self.pub_date = pub_date
         self.authors = authors
 
     def __repr__(self):
-        authors = ", ".join(self.authors)
-        return f'<Book {self.title} {authors} {self.isbn} pub_date: {self.pub_date}>'
+        authors_str = ""
+        for author in self.authors:
+            authors_str += author.surname + " " + author.name[0] + ". "
+        return f'Book: {self.title} {authors_str} {self.isbn} pub_date: {self.pub_date}'
 
 
 class Author(db.Model):
@@ -43,4 +46,4 @@ class Author(db.Model):
         self.surname = surname
 
     def __repr__(self):
-        return f'<Author {self.name} {self.surname}>'
+        return json.dumps(self.__dict__)
