@@ -49,7 +49,7 @@ def initialize_app(flask_app):
 
             author1 = Author("Adam", "Mickiewicz")
             author2 = Author("Adam", "Mickiewicz2")
-            book = Book("Dziady", "123", [author1, author2])
+            book = Book("Dziady", "123")
             book.authors.append(author1)
             book.authors.append(author2)
 
