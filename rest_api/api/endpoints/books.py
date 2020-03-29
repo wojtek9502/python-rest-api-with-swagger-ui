@@ -22,13 +22,8 @@ class BooksCollection(Resource):
         """
         Returns list of books.
         """
-        book_query = Book.query.all()
-        for i, book_elem in enumerate(book_query):
-            print(book_query[i].authors)
-            # book_query[0].pub_date = date.strftime(book_elem.pub_date, "%Y-%m-%d %H %M %S")
-
-        print(book_query)
-        return book_query
+        books = Book.query.all()
+        return books
 
     @api.expect(book)
     def post(self):
@@ -62,7 +57,7 @@ class PostItem(Resource):
     @api.marshal_with(book_with_authors)
     def get(self, id):
         """
-        Returns a book.
+        Returns a book with authors.
         """
         return Book.query.filter(Book.id == id).one()
 

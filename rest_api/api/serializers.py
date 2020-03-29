@@ -1,18 +1,10 @@
 from flask_restplus import fields
 from rest_api.api.restplus import api
-import json
-
-
-class Author(fields.Raw):
-    def format(self, value):
-        print(value)
-        return json.dumps(value.__dict__)
 
 book = api.model('Book', {
     'title': fields.String(required=True, description='Book title'),
     'isbn': fields.String(required=True, description='Book ISBN numer'),
     'pub_date': fields.Integer(required=True, description="Book pub date timestamp"),
-    'authors': Author()
 })
 
 author = api.model('Author', {
